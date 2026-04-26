@@ -60,6 +60,7 @@ SpeculativeMethod = Literal[
     "mlp_speculator",
     "draft_model",
     "suffix",
+    "ddtree",
     EagleModelTypes,
     NgramGPUTypes,
 ]
@@ -144,7 +145,7 @@ class SpeculativeConfig:
     """Enable parallel drafting, where all speculative tokens are generated
     in parallel rather than sequentially. This can improve performance but
     requires the speculative model be trained to support parallel drafting.
-    Only compatible with EAGLE and draft model methods."""
+    Only compatible with EAGLE, DFlash, and DDTree methods."""
 
     # required configuration params passed from engine
     target_model_config: SkipValidation[ModelConfig] = None  # type: ignore
@@ -267,6 +268,7 @@ class SpeculativeConfig:
             "eagle3",
             "extract_hidden_states",
             "dflash",
+            "ddtree",
         )
         factors.append(uses_aux_hidden_states)
 
@@ -568,7 +570,7 @@ class SpeculativeConfig:
                 )
 
                 # Automatically detect the method
-                if self.method in ("eagle", "eagle3", "dflash"):
+                if self.method in ("eagle", "eagle3", "dflash", "ddtree"):
                     pass
                 # examples:
                 # yuhuili/EAGLE-LLaMA3-Instruct-8B
@@ -580,6 +582,8 @@ class SpeculativeConfig:
                     self.method = "eagle3"
                 elif "dflash" in self.draft_model_config.model.lower():
                     self.method = "dflash"
+                elif "ddtree" in self.draft_model_config.model.lower():
+                    self.method = "ddtree"
                 elif self.draft_model_config.hf_config.model_type == "medusa":
                     self.method = "medusa"
                 elif self.draft_model_config.hf_config.model_type == "mlp_speculator":
@@ -633,6 +637,9 @@ class SpeculativeConfig:
                         self.update_arch_()
 
                 if self.method == "dflash":
+                    self.parallel_drafting = True
+
+                if self.method == "ddtree":
                     self.parallel_drafting = True
 
                 if self.num_speculative_tokens is not None and hasattr(
@@ -962,6 +969,9 @@ class SpeculativeConfig:
     def use_dflash(self) -> bool:
         return self.method == "dflash"
 
+    def use_ddtree(self) -> bool:
+        return self.method == "ddtree"
+
     def uses_draft_model(self) -> bool:
         return self.method == "draft_model"
 
@@ -975,7 +985,7 @@ class SpeculativeConfig:
         method = self.method
         model = (
             None
-            if method in ("ngram", "suffix", "extract_hidden_states")
+            if method in ("ngram", "suffix", "extract_hidden_states", "ddtree")
             else self.draft_model_config.model
         )
         num_spec_tokens = self.num_speculative_tokens
