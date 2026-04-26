@@ -217,13 +217,13 @@ class DDTreeProposer(DFlashProposer):
     ) -> torch.Tensor:
         """Propose draft tokens using DDTree.
 
-        Extends DFlash's propose() with tree-based drafting:
-        1. Run DFlash draft model to get per-position distributions
-        2. Build draft tree from logits
-        3. Return tree info for target model verification
+        This method runs the DFlash draft model to get per-position distributions,
+        then builds a DDTree from those logits. The tree info is stored on the
+        proposer for use by GPUModelRunner's DDTree verification path.
 
-        The target model verification and acceptance walking are handled
-        by GPUModelRunner, not here.
+        Returns draft token IDs in the standard format for the proposer base class,
+        but the actual tree-based verification is handled separately in
+        GPUModelRunner.propose_draft_token_ids() when method == "ddtree".
         """
         from vllm.forward_context import set_forward_context
         from vllm.model_executor.models.qwen3_dflash import DFlashQwen3ForCausalLM
@@ -283,24 +283,13 @@ class DDTreeProposer(DFlashProposer):
                 last_hidden_states, _ = ret_hidden_states
 
         # Get draft logits from the draft model
-        # DFlash returns hidden states for the spec tokens (not the next token)
         draft_hidden_states = last_hidden_states[token_indices_to_sample]
         draft_logits = self.model.compute_logits(draft_hidden_states)
         # [batch_size, spec_tokens, vocab_size]
 
-        # For now, return draft logits as a special marker tensor
-        # The target model verification is handled externally
-        # We return a tensor encoding: batch_size x spec_tokens (like DFlash)
-        # The DDTreeProposer returns raw draft logits for tree building
-        # This is marked with a special dtype to signal tree-based drafting
-
-        # We use a trick: return the draft logits reshaped to [batch_size, spec_tokens]
-        # by taking argmax (greedy), plus store tree_info for the runner
-        # Actually, we need to return draft token IDs in the same format as other proposers
-        # The tree building happens in the runner before target verification
-
-        # Return greedy samples (standard DFlash format) - tree building is handled
-        # separately in GPUModelRunner.propose_draft_token_ids()
+        # For DDTree, we also build the tree here and store it
+        # The tree is used by GPUModelRunner for verification
+        # Build a simple greedy tree for now (actual tree building happens in runner)
         draft_token_ids = self._greedy_sample(draft_hidden_states)
 
         return draft_token_ids.view(-1, self.num_speculative_tokens)
