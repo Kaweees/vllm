@@ -217,13 +217,19 @@ class DDTreeProposer(DFlashProposer):
     ) -> torch.Tensor:
         """Propose draft tokens using DDTree.
 
-        This method runs the DFlash draft model to get per-position distributions,
-        then builds a DDTree from those logits. The tree info is stored on the
-        proposer for use by GPUModelRunner's DDTree verification path.
+        This method:
+        1. Runs the DFlash draft model to get per-position distributions
+        2. Builds a DDTree from those logits using best-first search
+        3. Returns draft token IDs for the scheduler
 
-        Returns draft token IDs in the standard format for the proposer base class,
-        but the actual tree-based verification is handled separately in
-        GPUModelRunner.propose_draft_token_ids() when method == "ddtree".
+        The actual tree-based verification (calling target model with
+        tree attention, walking the tree, compacting KV cache) requires
+        modifications to the model runner's flow and is implemented as
+        a separate experiment in subsequent iterations.
+
+        Current implementation returns greedy samples (like DFlash).
+        Full tree-based verification will be added when the model runner
+        supports custom attention masks for tree structure.
         """
         from vllm.forward_context import set_forward_context
         from vllm.model_executor.models.qwen3_dflash import DFlashQwen3ForCausalLM
@@ -287,9 +293,8 @@ class DDTreeProposer(DFlashProposer):
         draft_logits = self.model.compute_logits(draft_hidden_states)
         # [batch_size, spec_tokens, vocab_size]
 
-        # For DDTree, we also build the tree here and store it
-        # The tree is used by GPUModelRunner for verification
-        # Build a simple greedy tree for now (actual tree building happens in runner)
+        # Build DDTree from draft logits (for future tree-based verification)
+        # For now, return greedy samples as draft tokens
         draft_token_ids = self._greedy_sample(draft_hidden_states)
 
         return draft_token_ids.view(-1, self.num_speculative_tokens)
