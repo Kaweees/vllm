@@ -63,3 +63,8 @@
 - Timestamp: 2026-04-26 10:30
 - What changed: Created docs/ddtree-howto.md with setup, usage, and config instructions
 - Result: Users can now run DDTree with a DFlash draft model
+
+## Run 4: Howto guide updated with Qwen3.5-27B models (KEEP)
+- Timestamp: 2026-04-26 10:35
+- What changed: Updated docs/ddtree-howto.md with Qwen3.5-27B target model and Qwen3.5-27B-DFlash draft model
+- Result: Instructions now use /models directory for downloading models via huggingface-cli
