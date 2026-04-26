@@ -13,8 +13,8 @@ VLLM_USE_PRECOMPILED=1 uv pip install -e . --torch-backend=auto
 
 ## Download models
 ```bash
-huggingface-cli download Qwen/Qwen3.5-27B --local-dir /models/Qwen3.5-27B
-huggingface-cli download z-lab/Qwen3.5-27B-DFlash --local-dir /models/Qwen3.5-27B-DFlash
+hf download Qwen/Qwen3.5-27B --local-dir /models/Qwen3.5-27B
+hf download z-lab/Qwen3.5-27B-DFlash --local-dir /models/Qwen3.5-27B-DFlash
 ```
 
 ## Unit tests (no GPU needed)
