@@ -22,6 +22,12 @@
 - Verification uses ancestor-only attention mask for tree structure
 - Tree building: best-first heap on accumulated log-probabilities, limited by node budget
 - KV cache compaction must preserve only accepted path tokens
+- DDTree verification requires custom attention mask (ancestor-only) in the runner
+  vLLM's TreeAttentionMetadata supports tree attention but is designed for fixed
+  tree structures (MTP). DDTree needs dynamic trees built from draft logits.
+- The cleanest path: modify DDTreeProposer.propose() to build the tree and store
+  tree_info (child_maps, visibility), then add a DDTree handler in the main
+  sample_tokens() flow that runs target model with tree attention.
 
 ## What's Been Tried
 
@@ -33,8 +39,18 @@
 - **Runner changes**: Wired into GPUModelRunner draft model selection and propose_draft_token_ids
 
 ## Next Ideas
-1. Implement GPU acceptance length benchmark (full integration test with DFlash draft model)
-2. Add tree_budget tuning experiments
-3. Implement CUDA graph support for DDTree verification
-4. Add multi-request batching tests
-5. Optimize tree building for speed (currently CPU-based)
+1. Implement full tree-based verification in GPUModelRunner (see architectural insight below)
+2. Add GPU acceptance length benchmark with DFlash draft model
+3. Add tree_budget tuning experiments
+4. Implement CUDA graph support for DDTree verification
+5. Add multi-request batching tests
+6. Optimize tree building for speed (currently CPU-based)
+
+## Run 2: DDTree wired into GPUModelRunner — unit_test_passed=1 (KEEP)
+- Timestamp: 2026-04-26 10:25
+- What changed: Added DDTree-specific branch in propose_draft_token_ids()
+- Result: DDTreeProposer runs DFlash draft model, returns draft token IDs
+- Insight: DDTree is now wired into vLLM's speculative decoding pipeline.
+  However, the current implementation returns greedy samples (like DFlash).
+  Full tree-based verification requires custom attention mask in the runner,
+  which needs modifications to the attention backend.
