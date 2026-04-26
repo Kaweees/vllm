@@ -38,3 +38,11 @@ The script:
 - unit tests must pass without GPU
 
 ## What's Been Tried
+
+### Round 1: Initial Implementation (KEEP)
+- **Approach**: DDTreeProposer extending DFlashProposer, reusing draft model loading and hidden state processing
+- **Result**: 16/16 unit tests pass
+- **Files**: ddtree_utils.py, ddtree_proposer.py, test_ddtree.py
+- **Config**: Added "ddtree" to SpeculativeMethod, parallel_drafting, use_ddtree() helper
+- **Runner**: Wired into GPUModelRunner draft model selection and propose_draft_token_ids
+- **Key design**: Tree building via best-first heap on accumulated log-probs, ancestor-only attention mask for verification, KV cache compaction for accepted paths
