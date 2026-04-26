@@ -68,3 +68,8 @@
 - Timestamp: 2026-04-26 10:35
 - What changed: Updated docs/ddtree-howto.md with Qwen3.5-27B target model and Qwen3.5-27B-DFlash draft model
 - Result: Instructions now use /models directory for downloading models via huggingface-cli
+
+## Run 5: Howto guide updated to use hf CLI (KEEP)
+- Timestamp: 2026-04-26 10:40
+- What changed: Changed huggingface-cli to hf in docs/ddtree-howto.md
+- Result: Model download commands now use the shorter hf CLI
