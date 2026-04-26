@@ -39,12 +39,16 @@
 - **Runner changes**: Wired into GPUModelRunner draft model selection and propose_draft_token_ids
 
 ## Next Ideas
-1. Implement full tree-based verification in GPUModelRunner (see architectural insight below)
-2. Add GPU acceptance length benchmark with DFlash draft model
-3. Add tree_budget tuning experiments
+1. Implement full tree-based verification in GPUModelRunner — the key missing piece
+   a. Store tree_info in proposer, add DDTree handler in sample_tokens() flow
+   b. Target model forward with tree attention → walk tree → accept tokens
+   c. Requires either: (a) save/restore KV cache around tree verify, or (b) defer tree verify to next scheduler iteration
+2. Add GPU acceptance length benchmark with DFlash draft model (to measure improvement)
+3. Add tree_budget tuning experiments (find optimal budget for different model sizes)
 4. Implement CUDA graph support for DDTree verification
 5. Add multi-request batching tests
-6. Optimize tree building for speed (currently CPU-based)
+6. Optimize tree building for speed (currently CPU-based, can use torch for GPU)
+7. Add howto guide for running DDTree (completed)
 
 ## Run 2: DDTree wired into GPUModelRunner — unit_test_passed=1 (KEEP)
 - Timestamp: 2026-04-26 10:25
@@ -54,3 +58,8 @@
   However, the current implementation returns greedy samples (like DFlash).
   Full tree-based verification requires custom attention mask in the runner,
   which needs modifications to the attention backend.
+
+## Run 3: Howto guide created (KEEP)
+- Timestamp: 2026-04-26 10:30
+- What changed: Created docs/ddtree-howto.md with setup, usage, and config instructions
+- Result: Users can now run DDTree with a DFlash draft model
