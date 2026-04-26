@@ -46,3 +46,10 @@ The script:
 - **Config**: Added "ddtree" to SpeculativeMethod, parallel_drafting, use_ddtree() helper
 - **Runner**: Wired into GPUModelRunner draft model selection and propose_draft_token_ids
 - **Key design**: Tree building via best-first heap on accumulated log-probs, ancestor-only attention mask for verification, KV cache compaction for accepted paths
+
+### Round 2: Runner Integration (KEEP)
+- **Approach**: Added DDTree-specific branch in propose_draft_token_ids()
+- **Result**: DDTreeProposer now runs DFlash draft model and returns draft token IDs
+- **Files**: gpu_model_runner.py (DDTree branch in propose_draft_token_ids)
+- **Limitation**: Current implementation returns greedy samples (like DFlash), not full tree-based verification
+- **Key insight**: Full tree verification requires custom attention mask (ancestor-only) in the runner. vLLM's TreeAttentionMetadata supports tree attention but is designed for fixed tree structures (MTP). DDTree needs dynamic trees built from draft logits every iteration.
