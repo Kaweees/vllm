@@ -19,7 +19,7 @@ hf download z-lab/Qwen3.5-27B-DFlash --local-dir /models/Qwen3.5-27B-DFlash
 
 ## Unit tests (no GPU needed)
 ```bash
-.venv/bin/python -m pytest tests/v1/spec_decode/test_ddtree.py -v
+uv run pytest tests/v1/spec_decode/test_ddtree.py -v
 ```
 
 ## Run DDTree with a model (requires GPU + DFlash draft model)
@@ -27,7 +27,7 @@ hf download z-lab/Qwen3.5-27B-DFlash --local-dir /models/Qwen3.5-27B-DFlash
 You need a target model and a DFlash draft model:
 
 ```bash
-python examples/offline_inference/spec_decode.py \
+uv run python3 examples/offline_inference/spec_decode.py \
   --model /models/Qwen3.5-27B \
   --draft-model /models/Qwen3.5-27B-DFlash \
   --speculative-method ddtree \
