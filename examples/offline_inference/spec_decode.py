@@ -48,7 +48,7 @@ def parse_args():
         "--method",
         type=str,
         default="eagle",
-        choices=["ngram", "eagle", "eagle3", "mtp", "draft_model"],
+        choices=["ngram", "eagle", "eagle3", "mtp", "draft_model", "ddtree"],
     )
     parser.add_argument("--backend", type=str, default="openai")
     parser.add_argument("--num-spec-tokens", type=int, default=2)
