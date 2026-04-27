@@ -141,6 +141,16 @@ def main(args):
             "method": "mtp",
             "num_speculative_tokens": args.num_spec_tokens,
         }
+    elif args.method == "ddtree":
+        assert args.draft_model is not None and args.draft_model != ""
+        speculative_config = {
+            "method": "ddtree",
+            "model": args.draft_model,
+            "num_speculative_tokens": args.num_spec_tokens,
+            "enforce_eager": args.enforce_eager,
+            "max_model_len": args.max_model_len,
+            "parallel_drafting": args.parallel_drafting,
+        }
     else:
         raise ValueError(f"unknown method: {args.method}")
 
