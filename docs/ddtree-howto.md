@@ -22,7 +22,7 @@ hf download z-lab/Qwen3.5-27B-DFlash --local-dir /models/Qwen3.5-27B-DFlash
 .venv/bin/python -m pytest tests/v1/spec_decode/test_ddtree.py -v
 ```
 
-## Run DDTree with a model (requires GPU + DFlash draft model)
+## Run DDTree with a model (offline benchmark, requires GPU + DFlash draft model)
 
 You need a target model and a DFlash draft model:
 
@@ -35,29 +35,22 @@ You need a target model and a DFlash draft model:
   --tp 1
 ```
 
-Or via the Python API:
+This runs an **offline inference benchmark** that measures the acceptance length (average number of draft tokens accepted per verification round). It does **not** launch an OpenAI API server.
 
-```python
-from vllm import LLM, SamplingParams
-
-llm = LLM(
-    model="/models/Qwen3.5-27B",
-    speculative_model="/models/Qwen3.5-27B-DFlash",
-    speculative_method="ddtree",
-    num_speculative_tokens=3,
-    tensor_parallel_size=1,
-)
-
-prompts = ["Hello, my name is"]
-sampling_params = SamplingParams(temperature=0.0, max_tokens=64)
-outputs = llm.generate(prompts, sampling_params)
+To launch an OpenAI-compatible API server with DDTree, use:
+```bash
+.venv/bin/python -m vllm.entrypoints.api_server \
+    --model /models/Qwen3.5-27B \
+    --draft-model /models/Qwen3.5-27B-DFlash \
+    --method ddtree \
+    --num-spec-tokens 3
 ```
 
 ## Config fields
 
 | Field | Value | Description |
 |-------|-------|-------------|
-| `--method` | `"ddtree"` | Enable DDTree |
+| `--method` | `"ddtree"` | Enable DDTree (CLI) |
 | `speculative_method` | `"ddtree"` | Enable DDTree (Python API) |
 | `speculative_model` | `/models/Qwen3.5-27B-DFlash` | DFlash draft model |
 | `num_speculative_tokens` | `3` (or higher) | Tree budget (nodes = spec_tokens) |
@@ -67,3 +60,7 @@ outputs = llm.generate(prompts, sampling_params)
 - **Tree verification is not yet active** — DDTree currently returns greedy samples (same as DFlash). The full tree-based verification with ancestor-only attention mask requires additional integration work in the model runner's `sample_tokens()` flow.
 - **Works with**: Qwen3.5-27B target model with Qwen3.5-27B-DFlash draft model
 - **Does not require**: New dependencies, new model types, or changes to the target model
+
+## Troubleshooting
+
+If you encounter import errors (e.g., `SlidingWindowMLASpec`), this may be due to the vLLM version in the environment. The DDTree implementation is compatible with the vLLM codebase at the time of writing. For the best experience, ensure you are using a recent version of vLLm that includes the necessary KV cache interface updates.
