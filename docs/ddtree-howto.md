@@ -30,7 +30,7 @@ You need a target model and a DFlash draft model:
 .venv/bin/python examples/offline_inference/spec_decode.py \
   --model /models/Qwen3.5-27B \
   --draft-model /models/Qwen3.5-27B-DFlash \
-  --speculative-method ddtree \
+  --method ddtree \
   --num-spec-tokens 3 \
   --tp 1
 ```
@@ -57,7 +57,8 @@ outputs = llm.generate(prompts, sampling_params)
 
 | Field | Value | Description |
 |-------|-------|-------------|
-| `speculative_method` | `"ddtree"` | Enable DDTree |
+| `--method` | `"ddtree"` | Enable DDTree |
+| `speculative_method` | `"ddtree"` | Enable DDTree (Python API) |
 | `speculative_model` | `/models/Qwen3.5-27B-DFlash` | DFlash draft model |
 | `num_speculative_tokens` | `3` (or higher) | Tree budget (nodes = spec_tokens) |
 
