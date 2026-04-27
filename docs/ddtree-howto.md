@@ -46,6 +46,18 @@ To launch an OpenAI-compatible API server with DDTree, use:
     --num-spec-tokens 3
 ```
 
+Once the server is running (default port 8000), you can test it with curl:
+```bash
+curl -X POST http://localhost:8000/v1/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "Qwen/Qwen3.5-27B",
+    "prompt": "Hello, my name is",
+    "max_tokens": 64,
+    "temperature": 0.0
+  }'
+```
+
 ## Config fields
 
 | Field | Value | Description |
